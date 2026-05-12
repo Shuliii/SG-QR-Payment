@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@jeremyling/sg-paynow-qr": "latest",
+    "express": "latest",
+    "qrcode": "latest"
+  }
+}
