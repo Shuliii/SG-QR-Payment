@@ -11,8 +11,7 @@ app.use(express.json());
 /**
  * Fixed PayNow phone number
  */
-const PAYNOW_PHONE = "96784325";
-
+const PAYNOW_PHONE = process.env.PAYNOW_PHONE;
 /**
  * Health check
  */
@@ -24,7 +23,7 @@ app.get("/health", (req, res) => {
 
 app.post("/api/paynow-qr", async (req, res) => {
   try {
-    const { amount, editable = false } = req.body;
+    const {amount, editable = false} = req.body;
 
     if (!amount) {
       return res.status(400).json({
