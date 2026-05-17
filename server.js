@@ -1,5 +1,3 @@
-// server.js
-
 const express = require("express");
 const QRCode = require("qrcode");
 const pn = require("@jeremyling/sg-paynow-qr");
@@ -8,13 +6,8 @@ const app = express();
 
 app.use(express.json());
 
-/**
- * Fixed PayNow phone number
- */
 const PAYNOW_PHONE = process.env.PAYNOW_PHONE;
-/**
- * Health check
- */
+
 app.get("/health", (req, res) => {
   res.json({
     status: "ok",
@@ -45,6 +38,13 @@ app.post("/api/paynow-qr", async (req, res) => {
 
     const qrImage = await QRCode.toDataURL(qrPayload);
 
+    res.set({
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+      Pragma: "no-cache",
+      Expires: "0",
+      "Surrogate-Control": "no-store",
+    });
+
     return res.json({
       success: true,
       data: {
@@ -63,9 +63,6 @@ app.post("/api/paynow-qr", async (req, res) => {
   }
 });
 
-/**
- * Start server
- */
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {

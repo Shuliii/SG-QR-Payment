@@ -1,10 +1,11 @@
-# docker-compose.yml
 services:
   paynow-qr:
     image: node:20-alpine
     working_dir: /app
     ports:
       - "3000:3000"
+    environment:
+      PAYNOW_PHONE: "87956046"
     volumes:
       - .:/app
     command: sh -c "npm install && npm start"
