@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
   deploy:
@@ -24,3 +21,11 @@ jobs:
 
       - name: Docker push
         run: docker push ricoharsono/paynow:latest
+
+      - name: Setup kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+
+      - name: Restart deployment
+        run: kubectl rollout restart deployment paynow
