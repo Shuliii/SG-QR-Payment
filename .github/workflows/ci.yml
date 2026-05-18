@@ -1,0 +1,20 @@
+name: Paynow Build and Deploy Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t ricoharsono/paynow:latest
