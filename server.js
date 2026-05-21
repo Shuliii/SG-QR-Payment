@@ -16,7 +16,7 @@ app.get("/health", (req, res) => {
 
 app.post("/api/paynow-qr", async (req, res) => {
   try {
-    const {amount, editable = false} = req.body;
+    const { amount, editable = false } = req.body;
 
     if (!amount) {
       return res.status(400).json({
@@ -24,10 +24,19 @@ app.post("/api/paynow-qr", async (req, res) => {
       });
     }
 
+    // NEW: Generate fresh expiry every request
+    const expiry = new Date();
+
+    // NEW: QR expires 2 hours from generation time
+    expiry.setHours(expiry.getHours() + 2);
+
     const [qrPayload, error] = pn.generateQr({
       mobile: "+65" + PAYNOW_PHONE,
       amount: Number(amount),
       editable: editable ? 1 : 0,
+
+      // NEW: Fresh expiry on every request
+      expiry,
     });
 
     if (error) {
@@ -38,6 +47,7 @@ app.post("/api/paynow-qr", async (req, res) => {
 
     const qrImage = await QRCode.toDataURL(qrPayload);
 
+    // NEW: Prevent browser / ingress / CDN caching
     res.set({
       "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
       Pragma: "no-cache",
@@ -52,6 +62,9 @@ app.post("/api/paynow-qr", async (req, res) => {
         editable,
         payload: qrPayload,
         qrImage,
+
+        // NEW: Helpful for debugging
+        expiry,
       },
     });
   } catch (err) {
