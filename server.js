@@ -18,6 +18,7 @@ app.post("/api/paynow-qr", async (req, res) => {
   try {
     // UPDATED: Receive expiry from backend
     const {amount, editable = false, expiry} = req.body;
+    console.log(amount, editable, expiry);
 
     if (!amount) {
       return res.status(400).json({
@@ -34,6 +35,7 @@ app.post("/api/paynow-qr", async (req, res) => {
 
     // NEW: Convert expiry string from JSON into JS Date object
     const expiryDate = new Date(expiry);
+    console.log("expiryDate is..." + expiryDate);
 
     // NEW: Validate expiry date
     if (Number.isNaN(expiryDate.getTime())) {
