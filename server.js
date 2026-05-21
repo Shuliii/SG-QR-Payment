@@ -16,7 +16,8 @@ app.get("/health", (req, res) => {
 
 app.post("/api/paynow-qr", async (req, res) => {
   try {
-    const { amount, editable = false } = req.body;
+    // UPDATED: Receive expiry from backend
+    const {amount, editable = false, expiry} = req.body;
 
     if (!amount) {
       return res.status(400).json({
@@ -24,19 +25,30 @@ app.post("/api/paynow-qr", async (req, res) => {
       });
     }
 
-    // NEW: Generate fresh expiry every request
-    const expiry = new Date();
+    // NEW: expiry is required from backend
+    if (!expiry) {
+      return res.status(400).json({
+        error: "expiry is required",
+      });
+    }
 
-    // NEW: QR expires 2 hours from generation time
-    expiry.setHours(expiry.getHours() + 2);
+    // NEW: Convert expiry string from JSON into JS Date object
+    const expiryDate = new Date(expiry);
+
+    // NEW: Validate expiry date
+    if (Number.isNaN(expiryDate.getTime())) {
+      return res.status(400).json({
+        error: "expiry must be a valid date",
+      });
+    }
 
     const [qrPayload, error] = pn.generateQr({
       mobile: "+65" + PAYNOW_PHONE,
       amount: Number(amount),
       editable: editable ? 1 : 0,
 
-      // NEW: Fresh expiry on every request
-      expiry,
+      // UPDATED: Use expiry received from backend
+      expiry: expiryDate,
     });
 
     if (error) {
@@ -47,7 +59,6 @@ app.post("/api/paynow-qr", async (req, res) => {
 
     const qrImage = await QRCode.toDataURL(qrPayload);
 
-    // NEW: Prevent browser / ingress / CDN caching
     res.set({
       "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
       Pragma: "no-cache",
@@ -63,8 +74,8 @@ app.post("/api/paynow-qr", async (req, res) => {
         payload: qrPayload,
         qrImage,
 
-        // NEW: Helpful for debugging
-        expiry,
+        // UPDATED: Return normalized expiry for debugging
+        expiry: expiryDate.toISOString(),
       },
     });
   } catch (err) {
