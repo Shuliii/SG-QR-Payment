@@ -53,6 +53,8 @@ app.post("/api/paynow-qr", async (req, res) => {
       expiry: expiryDate,
     });
 
+    console.log("qrPayload:", qrPayload);
+
     if (error) {
       return res.status(400).json({
         error,
